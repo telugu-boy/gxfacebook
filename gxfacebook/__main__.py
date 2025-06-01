@@ -1,29 +1,31 @@
+import re
+from urllib.parse import quote
+
 from sanic import Sanic, response
 from sanic.exceptions import NotFound
 from yt_dlp import YoutubeDL
-from urllib.parse import quote
-import re
 
 app = Sanic("FacebookReelDownloader")
+
 
 # Your fbmatch logic, slightly adapted to accept a full URL
 def fbmatch(url: str):
     ydl_opts = {
-        'format': 'hd',
-        'quiet': True,
-        'skip_download': True,
-        'forceurl': True,
-        'noplaylist': True,
+        "format": "hd",
+        "quiet": True,
+        "skip_download": True,
+        "forceurl": True,
+        "noplaylist": True,
     }
 
     with YoutubeDL(ydl_opts) as ydl:
         try:
             info = ydl.extract_info(url, download=False)
-            return info.get('url')
+            return info.get("url")
         except Exception as e:
             print(f"[ERROR] yt_dlp failed: {e}")
             return None
-    
+
 
 def render_embed(fb_path: str, video_url: str):
     full_url = f"https://www.facebook.com/{fb_path}"
@@ -58,13 +60,14 @@ Redirecting you to the post in a moment.
 </body>
 </html>"""
 
+
 def is_valid_path(path: str) -> bool:
     # Allow: letters, digits, dash, underscore, slash — and no ".." or double slashes
     return (
-        bool(re.fullmatch(r"[\w\-/]+", path))
-        and ".." not in path
-        and "//" not in path
+        bool(re.fullmatch(r"[\w\-/]+", path)) and ".." not in path and "//" not in path
     )
+
+
 @app.get("/<path:path>")
 async def embed_facebook_video(request, path):
     # Strip leading/trailing slashes
@@ -86,4 +89,3 @@ async def embed_facebook_video(request, path):
     # Build and return embed HTML
     html = render_embed(cleaned_path, video_url)
     return response.html(html)
-
