@@ -1,0 +1,7 @@
+poetry install
+
+PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring poetry install --with ui,local
+
+run prod
+
+poetry run sanic gxfacebook --host=0.0.0.0 --port=8000 --fast
