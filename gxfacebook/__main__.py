@@ -43,7 +43,7 @@ def render_embed(fb_path: str, video_url: str):
 <meta name="twitter:player:height" content="1280"/>
 <meta name="twitter:player:stream" content="{video_url}"/>
 <meta name="twitter:player:stream:content_type" content="video/mp4"/>
-<meta property="og:site_name" content="gxfacebook"/>
+<meta property="og:site_name" content="FacebookFix -- FB embed fix"/>
 <meta property="og:image" content="https://static.xx.fbcdn.net/rsrc.php/yo/r/iRmz9lCMBD2.ico"/>
 <meta property="og:video" content="{video_url}"/>
 <meta property="og:video:secure_url" content="{video_url}"/>
