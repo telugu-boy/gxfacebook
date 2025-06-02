@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FacebookFix - The Ultimate Facebook Media Embedder</title>
+    <style>
+        body {
+            background: black url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><defs><pattern id="stars" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="0.5" fill="%23444"/></pattern></defs><rect width="100" height="100" fill="url(%23stars)"/></svg>');
+            margin: 0;
+            padding: 0;
+            font-family: "Comic Sans MS", cursive, sans-serif;
+            overflow-x: auto;
+        }
+        
+        .container {
+            min-width: 800px;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .main-title {
+            font-size: 48px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.3);
+            margin: 20px 0;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .main-title div {
+            white-space: nowrap;
+            overflow: hidden;
+            width: 100%;
+        }
+        
+        @keyframes glow {
+            from { filter: brightness(1); }
+            to { filter: brightness(1.2) drop-shadow(0 0 10px rgba(255,255,255,0.3)); }
+        }
+        
+        .subtitle {
+            font-size: 24px;
+            color: #00ff00;
+            text-shadow: 1px 1px 2px #000;
+            margin: 10px 0;
+        }
+        
+        .main-content {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .sidebar {
+            width: 200px;
+            background: #001122;
+            border: 2px solid #0066cc;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,102,204,0.5);
+        }
+        
+        .nav-item {
+            display: block;
+            color: #00ccff;
+            text-decoration: none;
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: #003366;
+            border: 1px solid #0066cc;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .nav-item:hover {
+            background: #0066cc;
+            color: white;
+            box-shadow: 0 0 10px rgba(0,204,255,0.7);
+            transform: scale(1.05);
+        }
+        
+        .nav-section {
+            margin-bottom: 20px;
+        }
+        
+        .nav-title {
+            color: #ffff00;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px #000;
+        }
+        
+        .content-area {
+            flex: 1;
+            background: #000033;
+            border: 2px solid #6600cc;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 0 20px rgba(102,0,204,0.4);
+        }
+        
+        .welcome-text {
+            color: #00ffff;
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            text-shadow: 1px 1px 1px #000;
+        }
+        
+        .highlight {
+            color: #ffff00;
+            font-weight: bold;
+            background: #330066;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        
+        .example-box {
+            background: #001133;
+            border: 2px solid #0099ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: inset 0 0 10px rgba(0,153,255,0.3);
+        }
+        
+        .example-title {
+            color: #ff6600;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 2px #000;
+        }
+        
+        .url-example {
+            font-family: "Courier New", monospace;
+            background: #000;
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #00aa00;
+            margin: 10px 0;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        
+        .try-link {
+            display: inline-block;
+            color: #ff00ff;
+            background: #330033;
+            padding: 10px 20px;
+            text-decoration: none;
+            border: 2px solid #ff00ff;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: all 0.3s;
+            text-shadow: 1px 1px 1px #000;
+        }
+        
+        .try-link:hover {
+            background: #ff00ff;
+            color: #330033;
+            box-shadow: 0 0 15px rgba(255,0,255,0.7);
+            transform: translateY(-2px);
+        }
+        
+        .blink {
+            animation: blink 1.5s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #888;
+            font-size: 12px;
+        }
+        
+        .visitor-counter {
+            background: #000;
+            color: #00ff00;
+            padding: 5px 10px;
+            border: 1px solid #00aa00;
+            border-radius: 3px;
+            font-family: "Courier New", monospace;
+            display: inline-block;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+           <div class="main-title">
+                <marquee behavior="alternate" direction="left" scrollamount="3">
+                    <span style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-shadow: 2px 2px 4px rgba(255,255,255,0.3);">FacebookFix • FacebookFix • FacebookFix • FacebookFix • FacebookFix</span>
+                </marquee>
+            </div>
+            <div class="subtitle">Embed Facebook Media Anywhere!</div>
+            <div class="visitor-counter">👥 Visitors: 999999+ and counting!</div>
+        </div>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="nav-section">
+                    <div class="nav-title">🔧 TOOLS</div>
+                    <a href="#how-to" class="nav-item">How To Use</a>
+                    <a href="#examples" class="nav-item">Examples</a>
+                    <a href="#features" class="nav-item">Features</a>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-title">🌐 LINKS</div>
+                    <a href="https://github.com/telugu-boy/gxfacebook" class="nav-item" target="_blank">GitHub Repo</a>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-title">⚡ STATUS</div>
+                    <div style="color: #00ff00; text-align: center; font-weight: bold; padding: 10px;">
+                        <span class="blink">● ONLINE</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-area">
+                <div class="welcome-text">
+                    🎉 <strong>Hello Web Surfer and Welcome To FacebookFix!</strong> 🎉
+                    <br><br>
+                    Are you tired of sharing Facebook videos that <span class="highlight">nobody clicks</span> because they don't embed properly? 
+                    Well, you've come to the right place! FacebookFix is here to save the day! 
+                    <br><br>
+                    Just like <span class="highlight">fxtwitter</span>, <span class="highlight">vxtiktok</span>, and <span class="highlight">ddinstagram</span>, but for Facebook; no more login barriers, no more boring text links!
+                </div>
+                
+                <div class="example-box" id="how-to">
+                    <div class="example-title">HOW TO USE (Very Easy)</div>
+                    <div style="color: #ffffff; margin-bottom: 15px;">
+                        1. Take any Facebook video URL<br>
+                        2. Change <span class="highlight">facebook.com</span> to <span class="highlight">fixacebook.com</span><br>
+                        3. Share it anywhere and watch it embed beautifully!
+                    </div>
+                </div>
+                
+                <div class="example-box" id="examples">
+                    <div class="example-title">EXAMPLE</div>
+                    <div style="color: #ffffff; margin-bottom: 10px;"><strong>Original Facebook URL:</strong></div>
+                    <div class="url-example">https://www.facebook.com/share/v/1CYpws4WmF/</div>
+                    
+                    <div style="color: #ffffff; margin: 15px 0 10px 0;"><strong>🎯 Use this link instead:</strong></div>
+                    <div class="url-example">https://www.fixacebook.com/share/v/1CYpws4WmF/</div>
+                    
+                    <a href="/share/v/1CYpws4WmF/" class="try-link">
+                        🎬 Try the example video → 
+                    </a>
+                </div>
+                
+                <div class="example-box" id="features">
+                    <div class="example-title">⭐ AWESOME FEATURES</div>
+                    <div style="color: #ffffff; line-height: 1.8;">
+                        ✅ Works on Discord, Slack, Twitter, and more!<br>
+                        ✅ No login required for viewers<br>
+                        ✅ Perfect video previews with metadata<br>
+                        ✅ Lightning fast and reliable<br>
+                        ✅ 100% Free and Open Source!<br>
+                        ✅ <span class="blink">NEW!</span> Works with Facebook Reels too!
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div style="color: #666; margin-top: 20px;">
+                Check out the code on GitHub!
+            </div>
+        </div>
+    </div>
+</body>
+</html>
