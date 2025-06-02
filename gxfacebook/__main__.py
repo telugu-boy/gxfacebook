@@ -1,14 +1,43 @@
+import logging
 import re
+from datetime import datetime
 from urllib.parse import quote
 
 from sanic import Sanic, response
 from sanic.exceptions import NotFound
 from yt_dlp import YoutubeDL
 
+# Create app
 app = Sanic("FacebookReelDownloader")
 
+# Configure loggers
+access_logger = logging.getLogger("access_logger")
+error_logger = logging.getLogger("error_logger")
 
-# Your fbmatch logic, slightly adapted to accept a full URL
+access_handler = logging.FileHandler("access.log")
+access_handler.setFormatter(logging.Formatter("%(asctime)s - %(message)s"))
+access_logger.addHandler(access_handler)
+access_logger.setLevel(logging.INFO)
+
+error_handler = logging.FileHandler("errors.log")
+error_handler.setFormatter(logging.Formatter("%(asctime)s - %(message)s"))
+error_logger.addHandler(error_handler)
+error_logger.setLevel(logging.ERROR)
+
+
+# Middleware to log every request
+@app.middleware("request")
+async def log_facebook_requests(request):
+    ip = request.remote_addr
+    method = request.method
+    path = request.path
+
+    # Only log paths starting with /share/
+    access_logger.info(f"{ip} - {method} {path}")
+
+
+
+# Video downloader
 def fbmatch(url: str):
     ydl_opts = {
         "format": "hd",
@@ -23,13 +52,13 @@ def fbmatch(url: str):
             info = ydl.extract_info(url, download=False)
             return info.get("url")
         except Exception as e:
-            print(f"[ERROR] yt_dlp failed: {e}")
+            error_logger.error(f"[yt-dlp ERROR] {url} - {e}")
             return None
 
 
+# Embed HTML generator
 def render_embed(fb_path: str, video_url: str):
     full_url = f"https://www.facebook.com/{fb_path}"
-
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -61,13 +90,18 @@ Redirecting you to the post in a moment.
 </html>"""
 
 
+# Validate path
 def is_valid_path(path: str) -> bool:
-    # Allow: letters, digits, dash, underscore, slash — and no ".." or double slashes
     return (
         bool(re.fullmatch(r"[\w\-/]+", path)) and ".." not in path and "//" not in path
     )
 
-from sanic import response
+
+# Homepage
+
+@app.get("/favicon.ico")
+async def favicon(request):
+    return await response.file("static/favicon.ico")
 
 @app.get("/")
 async def homepage(request):
@@ -151,24 +185,26 @@ async def homepage(request):
     return response.html(html)
 
 
+# Embed route
 @app.get("/<path:path>")
 async def embed_facebook_video(request, path):
-    # Strip leading/trailing slashes
     cleaned_path = path.strip("/")
 
-    # Validate
     if not is_valid_path(cleaned_path):
+        error_logger.error(f"[Invalid Path] {request.remote_addr} tried '{path}'")
         return response.text("Invalid Facebook video path", status=400)
 
-    # Safely encode the path
     encoded_path = quote(cleaned_path)
     fb_url = f"https://www.facebook.com/{encoded_path}"
 
-    # Extract video
     video_url = fbmatch(fb_url)
     if not video_url:
+        error_logger.error(
+            f"[Video Fetch Error] {request.remote_addr} failed on {fb_url}"
+        )
         return response.text("Unable to retrieve video", status=500)
 
-    # Build and return embed HTML
+    print(f"[OK] {request.remote_addr} requested /{path}")
+
     html = render_embed(cleaned_path, video_url)
     return response.html(html)
