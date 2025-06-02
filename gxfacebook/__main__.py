@@ -36,8 +36,80 @@ async def log_facebook_requests(request):
     access_logger.info(f"{ip} - {method} {path}")
 
 
+# Helper function to format numbers with K/M suffixes
+def format_number(num):
+    if num is None:
+        return "0"
+    
+    num = int(num)
+    if num >= 1_000_000:
+        return f"{num / 1_000_000:.1f}M".rstrip('0').rstrip('.')
+    elif num >= 1_000:
+        return f"{num / 1_000:.1f}K".rstrip('0').rstrip('.')
+    else:
+        return str(num)
 
-# Video downloader
+# Updated embed HTML generator
+def render_embed(fb_path: str, video_url: str, video_info: dict = None):
+    full_url = f"https://www.facebook.com/{fb_path}"
+    
+    # Generate stats title if video_info is provided
+    if video_info:
+        import re
+        
+        comment_count = format_number(video_info.get('comment_count', 0))
+        
+        # Extract views and reactions from title
+        title = video_info.get('title', '')
+        view_count = "0"
+        reaction_count = "0"
+        
+        # Look for pattern like "652K views · 237K reactions"
+        view_match = re.search(r'(\d+(?:\.\d+)?[KM]?)\s*views', title, re.IGNORECASE)
+        if view_match:
+            view_count = view_match.group(1)
+            
+        reaction_match = re.search(r'(\d+(?:\.\d+)?[KM]?)\s*reactions', title, re.IGNORECASE)
+        if reaction_match:
+            reaction_count = reaction_match.group(1)
+        
+        # Create stats title
+        og_title = f"💬 {comment_count} ❤️ {reaction_count} 👁️ {view_count}"
+    else:
+        og_title = "Facebook Reel"
+    
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="theme-color" content="#007FFF"/>
+<meta property="og:url" content="{full_url}"/>
+<meta property="og:title" content="FacebookFix -- FB embed fix"/>
+<meta property="og:description" content="FacebookFix -- FB embed fix"/>
+<meta http-equiv="refresh" content="0; url={full_url}"/>
+<meta name="twitter:card" content="player"/>
+<meta name="twitter:title" content="FacebookFix -- FB embed fix"/>
+<meta name="twitter:image" content="https://static.xx.fbcdn.net/rsrc.php/yo/r/iRmz9lCMBD2.ico"/>
+<meta name="twitter:player:width" content="720"/>
+<meta name="twitter:player:height" content="1280"/>
+<meta name="twitter:player:stream" content="{video_url}"/>
+<meta name="twitter:player:stream:content_type" content="video/mp4"/>
+<meta property="og:site_name" content="{og_title}"/>
+<meta property="og:image" content="https://static.xx.fbcdn.net/rsrc.php/yo/r/iRmz9lCMBD2.ico"/>
+<meta property="og:video" content="{video_url}"/>
+<meta property="og:video:secure_url" content="{video_url}"/>
+<meta property="og:video:type" content="video/mp4"/>
+<meta property="og:video:width" content="720"/>
+<meta property="og:video:height" content="1280"/>
+<link rel="alternate" href="{full_url}" type="application/json+oembed" title="{og_title}"/>
+</head>
+<body>
+Redirecting you to the post in a moment.
+<a href="{full_url}">Or click here.</a>
+</body>
+</html>"""
+
+# Updated video downloader to return both URL and info
 def fbmatch(url: str):
     ydl_opts = {
         "format": "hd",
@@ -50,44 +122,10 @@ def fbmatch(url: str):
     with YoutubeDL(ydl_opts) as ydl:
         try:
             info = ydl.extract_info(url, download=False)
-            return info.get("url")
+            return info.get("url"), info
         except Exception as e:
             error_logger.error(f"[yt-dlp ERROR] {url} - {e}")
-            return None
-
-
-# Embed HTML generator
-def render_embed(fb_path: str, video_url: str):
-    full_url = f"https://www.facebook.com/{fb_path}"
-    return f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta name="theme-color" content="#007FFF"/>
-<meta property="og:url" content="{full_url}"/>
-<meta property="og:description" content="Facebook Reel"/>
-<meta http-equiv="refresh" content="0; url={full_url}"/>
-<meta name="twitter:card" content="player"/>
-<meta name="twitter:title" content="Facebook Reel"/>
-<meta name="twitter:image" content="https://static.xx.fbcdn.net/rsrc.php/yo/r/iRmz9lCMBD2.ico"/>
-<meta name="twitter:player:width" content="720"/>
-<meta name="twitter:player:height" content="1280"/>
-<meta name="twitter:player:stream" content="{video_url}"/>
-<meta name="twitter:player:stream:content_type" content="video/mp4"/>
-<meta property="og:site_name" content="FacebookFix -- FB embed fix"/>
-<meta property="og:image" content="https://static.xx.fbcdn.net/rsrc.php/yo/r/iRmz9lCMBD2.ico"/>
-<meta property="og:video" content="{video_url}"/>
-<meta property="og:video:secure_url" content="{video_url}"/>
-<meta property="og:video:type" content="video/mp4"/>
-<meta property="og:video:width" content="720"/>
-<meta property="og:video:height" content="1280"/>
-<link rel="alternate" href="{full_url}" type="application/json+oembed" title="Facebook Reel"/>
-</head>
-<body>
-Redirecting you to the post in a moment.
-<a href="{full_url}">Or click here.</a>
-</body>
-</html>"""
+            return None, None
 
 
 # Validate path
@@ -120,7 +158,7 @@ async def embed_facebook_video(request, path):
     encoded_path = quote(cleaned_path)
     fb_url = f"https://www.facebook.com/{encoded_path}"
 
-    video_url = fbmatch(fb_url)
+    video_url, vidinfo = fbmatch(fb_url)
     if not video_url:
         error_logger.error(
             f"[Video Fetch Error] {request.remote_addr} failed on {fb_url}"
@@ -129,5 +167,5 @@ async def embed_facebook_video(request, path):
 
     print(f"[OK] {request.remote_addr} requested /{path}")
 
-    html = render_embed(cleaned_path, video_url)
+    html = render_embed(cleaned_path, video_url, vidinfo)
     return response.html(html)
