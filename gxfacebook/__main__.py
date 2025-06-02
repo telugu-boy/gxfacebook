@@ -84,11 +84,11 @@ def render_embed(fb_path: str, video_url: str, video_info: dict = None):
 <meta charset="utf-8"/>
 <meta name="theme-color" content="#007FFF"/>
 <meta property="og:url" content="{full_url}"/>
-<meta property="og:title" content="FacebookFix -- FB embed fix"/>
+<meta property="og:title" content="Facebook Reel"/>
 <meta property="og:description" content="FacebookFix -- FB embed fix"/>
 <meta http-equiv="refresh" content="0; url={full_url}"/>
 <meta name="twitter:card" content="player"/>
-<meta name="twitter:title" content="FacebookFix -- FB embed fix"/>
+<meta name="twitter:title" content="Facebook Reel"/>
 <meta name="twitter:image" content="https://static.xx.fbcdn.net/rsrc.php/yo/r/iRmz9lCMBD2.ico"/>
 <meta name="twitter:player:width" content="720"/>
 <meta name="twitter:player:height" content="1280"/>
