@@ -60,6 +60,9 @@ cover/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+*.db
+*.db-wal
+*.db-shm
 
 # Flask stuff:
 instance/
@@ -195,3 +198,14 @@ cython_debug/
 
 # playwright mcp
 .playwright-mcp/
+
+# Cookies and local database
+cookies.txt
+facebook_cookies.txt
+gxfacebook.db
+gxfacebook.db-wal
+gxfacebook.db-shm
+*.db
+*.db-wal
+*.db-shm
+

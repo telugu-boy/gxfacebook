@@ -5,6 +5,9 @@ description = "Facebook embed fix with OpenGraph tags"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "aiosqlite>=0.22.1",
+    "beautifulsoup4>=4.15.0",
+    "httpx>=0.28.1",
     "sanic>=25.12.1",
     "yt-dlp>=2026.8.19",
 ]
@@ -12,3 +15,10 @@ dependencies = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "sanic-testing>=24.6.0",
+]
