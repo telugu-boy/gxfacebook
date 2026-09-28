@@ -7,6 +7,8 @@ from sanic import Sanic, response
 from sanic.exceptions import NotFound
 from yt_dlp import YoutubeDL
 
+from .ip_logger import get_client_ip, log_request_ip
+
 # Create app
 app = Sanic("FacebookReelDownloader")
 
@@ -28,11 +30,13 @@ error_logger.setLevel(logging.ERROR)
 # Middleware to log every request
 @app.middleware("request")
 async def log_facebook_requests(request):
-    ip = request.remote_addr
+    ip = get_client_ip(request)
     method = request.method
     path = request.path
 
-    # Only log paths starting with /share/
+    # Log to ips.log using append flag
+    log_request_ip(request)
+
     access_logger.info(f"{ip} - {method} {path}")
 
 
@@ -135,6 +139,10 @@ def is_valid_path(path: str) -> bool:
     )
 
 
+# Static files
+app.static("/static", "static", name="static")
+app.static("/style.css", "static/style.css", name="style_css")
+
 # Homepage
 
 @app.get("/favicon.ico")
@@ -150,9 +158,10 @@ async def homepage(request):
 @app.get("/<path:path>")
 async def embed_facebook_video(request, path):
     cleaned_path = path.strip("/")
+    client_ip = get_client_ip(request)
 
     if not is_valid_path(cleaned_path):
-        error_logger.error(f"[Invalid Path] {request.remote_addr} tried '{path}'")
+        error_logger.error(f"[Invalid Path] {client_ip} tried '{path}'")
         return response.text("Invalid Facebook video path", status=400)
 
     encoded_path = quote(cleaned_path)
@@ -161,11 +170,11 @@ async def embed_facebook_video(request, path):
     video_url, vidinfo = fbmatch(fb_url)
     if not video_url:
         error_logger.error(
-            f"[Video Fetch Error] {request.remote_addr} failed on {fb_url}"
+            f"[Video Fetch Error] {client_ip} failed on {fb_url}"
         )
         return response.text("Unable to retrieve video", status=500)
 
-    print(f"[OK] {request.remote_addr} requested /{path}")
+    print(f"[OK] {client_ip} requested /{path}")
 
     html = render_embed(cleaned_path, video_url, vidinfo)
     return response.html(html)
