@@ -1,16 +1,14 @@
-[tool.poetry]
+[project]
 name = "gxfacebook"
 version = "0.1.0"
-description = ""
-authors = ["telugu-boy <h0l33fuk@gmail.com>"]
+description = "Facebook embed fix with OpenGraph tags"
 readme = "README.md"
-
-[tool.poetry.dependencies]
-python = ">=3.9"
-sanic = "^25.3.0"
-yt-dlp = "^2025.5.22"
-
+requires-python = ">=3.13"
+dependencies = [
+    "sanic>=25.12.1",
+    "yt-dlp>=2026.8.19",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

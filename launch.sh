@@ -1,1 +1,3 @@
-poetry run sanic gxfacebook --host=0.0.0.0 --port=8000 --fast
+#!/bin/bash
+export PATH="$HOME/.local/bin:$PATH"
+uv run sanic gxfacebook --host=0.0.0.0 --port=8000 --fast
